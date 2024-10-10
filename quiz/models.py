@@ -1,5 +1,5 @@
 from django.db import models
-
+from user.models import User
 
 
 
@@ -23,14 +23,58 @@ class ProgrammLanguage(BaseModel):
 
 
 
-class Questions(BaseModel):
-     ball = models.IntegerField(default=0)
-     savol = models.TextField()
-     vaqt = models.DateTimeField(auto_created=True)
-     is_published = models.BooleanField(default=False)
+class Quiz(BaseModel):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
 
 
-     def __str__(self):
-          return self.savol
+    def __str__(self):
+        return self.name
 
 
+
+class Question(BaseModel):
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE, related_name='questions')
+    text = models.TextField(blank=True, null=True)
+    time_limit = models.IntegerField(default=20)
+    is_published = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.text
+
+
+
+class Participant(BaseModel):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    quiz = models.ForeignKey(Quiz, on_delete=models.CASCADE)
+    score = models.IntegerField(default=0)
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+
+    def __str__(self):
+        return f"{self.user.username} - {self.quiz.name}"
+
+
+
+class Answer(BaseModel):
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, related_name='answers')
+    text = models.TextField(blank=True, null=True)
+    is_correct = models.BooleanField(default=False)
+
+
+    def __str__(self):
+        return self.text
+
+
+
+
+class Result(models.Model):
+    participant = models.ForeignKey(Participant, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+
+    def is_correct(self):
+        return self.selected_answer.is_correct
+
+    def __str__(self):
+        return f"Participant: {self.participant.user.username}, Question: {self.question.text}, Selected Answer: {self.selected_answer.text}"

@@ -1,5 +1,5 @@
 from django.db import models
-
+from django.contrib.auth.models import AbstractUser
 
 
 
@@ -13,7 +13,7 @@ class BaseModel(models.Model):
 
 
 
-class User(BaseModel):
+class User(BaseModel, AbstractUser):
      username = models.CharField(max_length=50)
      name = models.CharField(max_length=50)
      surname = models.CharField(max_length=50)
@@ -27,3 +27,16 @@ class User(BaseModel):
 
      def __str__(self):
           return self.username
+
+
+
+class Profile(BaseModel):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    game_count = models.IntegerField(default=0)
+    win_count = models.IntegerField(default=0)
+    points = models.IntegerField(default=0)
+    lose_count = models.IntegerField(default=0)
+
+
+    def __str__(self):
+     return self.user
